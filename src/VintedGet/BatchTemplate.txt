@@ -1,0 +1,16 @@
+﻿#
+# vget batch file template
+#
+
+# current folder
+https://www.vinted.fr/items/5216666706-jeux-mario-lapins-cretins-switch
+https://www.vinted.fr/items/5218415510-super-mario-3d-all-stars
+
+# X-Box folder
+:xbox
+https://www.vinted.fr/divertissement/jeux-video-and-consoles/xbox-one-2381/2521486454-jeu-forza-horizon-3
+https://www.vinted.fr/divertissement/jeux-video-and-consoles/xbox-one-2381/2523554761-lego-star-wars-deluxe-edition-xbox
+
+# PS5 folder
+:ps5
+https://www.vinted.fr/divertissement/jeux-video-and-consoles/playstation-5-2390/2523671398-fifa-2023
