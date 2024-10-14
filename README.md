@@ -1,4 +1,12 @@
-﻿NAME
+﻿# Installation
+
+Extract binaries from a release into a local directory. Then, use it
+
+`vget --help` 
+
+# Documentation
+
+NAME
 
         vget - get full size photos from Vinted web sites
 
