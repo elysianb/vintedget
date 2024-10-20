@@ -48,7 +48,7 @@ namespace VintedGet.Infrastructure
                 }
             }
 
-            if (result.StartsWith("--") || result.EndsWith("-"))
+            if (string.IsNullOrEmpty(result) || result.StartsWith("--") || result.EndsWith("-"))
             {
                 return defaultValue;
             }

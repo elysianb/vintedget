@@ -9,12 +9,12 @@ namespace VintedGet.Commands
 {
     internal class GetFavoritesCommand
     {
-        public void Execute(string userId, string userSession, string operation, string itemLimit)
+        public void Execute(string userId, string userCookies, string operation, string itemLimit)
         {
-            VintedProcessor.EnsureHasSession(ref userId, ref userSession);
-            if (VintedProcessor.HasSession(userId, userSession))
+            VintedProcessor.EnsureHasSession(ref userId, ref userCookies);
+            if (VintedProcessor.HasSession(userId, userCookies))
             {
-                VintedProcessor.GetFavorites(operation, itemLimit, userId, userSession);
+                VintedProcessor.GetFavorites(operation, itemLimit, userId, userCookies);
             }
         }
     }

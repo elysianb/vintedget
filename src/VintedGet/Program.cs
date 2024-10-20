@@ -36,6 +36,7 @@ namespace VintedGet
                 x => {
                     var userId = x.GetParameterValue("userid", "uid");
                     var userSession = x.GetParameterValue("session", "s");
+                    var token = args.GetParameterValue("token", "T");
                     new LoginCommand().Execute(userId, userSession);
                 });
 
@@ -72,6 +73,7 @@ namespace VintedGet
                x => {
                    var userId = args.GetParameterValue("userid", "uid");
                    var userSession = args.GetParameterValue("session", "s");
+                   var token = args.GetParameterValue("token", "T");
                    var threadId = args.GetParameterValue("thread", "t");
 
                    new GetThreadCommand().Execute(userId, userSession, threadId);
@@ -81,6 +83,7 @@ namespace VintedGet
                x => {
                    var userId = args.GetParameterValue("userid", "uid");
                    var userSession = args.GetParameterValue("session", "s");
+                   var token = args.GetParameterValue("token", "T");
                    var operation = args.GetParameterValue("download", "d", "download");
                    var itemLimit = args.GetParameterValue("itemlimit", "il");
 

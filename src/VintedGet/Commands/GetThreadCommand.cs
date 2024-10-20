@@ -9,13 +9,13 @@ namespace VintedGet.Commands
 {
     internal class GetThreadCommand
     {
-        public void Execute(string userId, string userSession, string threadId)
+        public void Execute(string userId, string userCookies, string threadId)
         {
 
-            VintedProcessor.EnsureHasSession(ref userId, ref userSession);
-            if (VintedProcessor.HasSession(userId, userSession))
+            VintedProcessor.EnsureHasSession(ref userId, ref userCookies);
+            if (VintedProcessor.HasSession(userId, userCookies))
             {
-                VintedProcessor.GetThreadImages(userId, userSession, threadId);
+                VintedProcessor.GetThreadImages(userId, userCookies, threadId);
             }
         }
     }
