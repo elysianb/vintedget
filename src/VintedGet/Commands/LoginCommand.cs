@@ -15,7 +15,7 @@ namespace VintedGet.Commands
             {
                 System.IO.Directory.CreateDirectory(GlobalSettings.Instance.SettingsFolder);
                 System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"), userId);
-                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_session"), userSession);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"), userSession);
 
                 var user = VintedProcessor.GetUser(userId, userSession);
                 Console.WriteLine($"logged as {user.Login}");

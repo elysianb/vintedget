@@ -21,11 +21,11 @@ namespace VintedGet.Services
             if (
                 (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userSession))
                 && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"))
-                && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_session"))
+                && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"))
                 )
             {
                 userId = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"));
-                userSession = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_session"));
+                userSession = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"));
             }
         }
 
@@ -33,7 +33,7 @@ namespace VintedGet.Services
         {
             System.IO.Directory.CreateDirectory(GlobalSettings.Instance.SettingsFolder);
             System.IO.File.Delete(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"));
-            System.IO.File.Delete(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_session"));
+            System.IO.File.Delete(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"));
             Console.WriteLine($"logged out");
         }
 
@@ -160,7 +160,7 @@ namespace VintedGet.Services
 
         public static HttpClient AquirePublicSession(out string csrfToken)
         {
-            var authority = "https://www.vinted.fr";
+            var authority = GlobalSettings.Instance.Authority;
 
             var cookieContainer = new CookieContainer();
             var handler = new HttpClientHandler();
@@ -196,15 +196,16 @@ namespace VintedGet.Services
             return client;
         }
 
-        public static User GetUser(string userId, string userSession)
+        public static User GetUser(string userId, string cookies)
         {
             using (var client = new WebClient())
             {
-                client.Headers.Add(HttpRequestHeader.Cookie, $"_vinted_fr_session={userSession}");
+                client.Headers.Add(HttpRequestHeader.Cookie, cookies);
                 client.Headers.Add("Accept-Encoding", $"identity");
-                client.Headers.Add("User-Agent", $"python-urllib3/1.26.13");
+                client.Headers.Add("Referer", $"{GlobalSettings.Instance.Authority}/member/{userId}");
+                client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
 
-                var url = $"https://www.vinted.nl/api/v2/users/{userId}?localize=false";
+                var url = $"https://www.vinted.fr/api/v2/users/{userId}?localize=false";
                 var filename = $"{userId}-user.vget-response.json";
                 var json = DownloadString(client, filename, url, 1000, 3);
 
@@ -233,7 +234,7 @@ namespace VintedGet.Services
             string profilePhoto;
             Domain.Model.ItemDto item = null;
 
-            var uri = $"https://www.vinted.fr/items/{itemId}";
+            var uri = $"{GlobalSettings.Instance.Authority}/items/{itemId}";
             //var uri = $"https://www.vinted.fr/api/v2/items/{itemId}";
 
             //int retryCount = 0;
@@ -277,7 +278,7 @@ namespace VintedGet.Services
 
                 using (var request = new HttpRequestMessage(HttpMethod.Get, url))
                 {
-                    request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36");
+                    request.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
                     var httpResponse = httpClient.SendAsync(request).Result;
                     logs.Add($"statusCode={httpResponse.StatusCode}");
                     logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
@@ -384,10 +385,10 @@ namespace VintedGet.Services
             return result.Substring(0, endIndex);
         }
 
-        internal static void GetFavorites(string operation, string itemLimit, string userId, string userSession)
+        internal static void GetFavorites(string operation, string itemLimit, string userId, string userCookies)
         {
             Console.WriteLine($"UserId : {userId}");
-            Console.WriteLine($"Session : \r\n{userSession}");
+            Console.WriteLine($"Cookies : \r\n{userCookies}");
 
             //var url0 = $"https://www.vinted.nl/api/v2/users/{userId}/msg_threads";
             var pageCounter = 1;
@@ -400,11 +401,11 @@ namespace VintedGet.Services
             {
                 using (var client = new WebClient())
                 {
-                    client.Headers.Add(HttpRequestHeader.Cookie, $"_vinted_fr_session={userSession}");
+                    client.Headers.Add(HttpRequestHeader.Cookie, userCookies);
                     client.Headers.Add("Accept-Encoding", $"identity");
-                    client.Headers.Add("User-Agent", $"python-urllib3/1.26.13");
+                    client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
 
-                    var url = $"https://www.vinted.nl/api/v2/users/{userId}/items/favourites?page={pageCounter}&include_sold=true&per_page={perPages}";
+                    var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}/items/favourites?page={pageCounter}&include_sold=true&per_page={perPages}";
                     var filename = System.IO.Path.Combine(GlobalSettings.Instance.Output, $"{userId}-favorites-{pageCounter}.vget-response.json");
                     var json = DownloadString(client, filename, url, GlobalSettings.Instance.Delay, GlobalSettings.Instance.MaxRetry);
 
@@ -504,19 +505,19 @@ namespace VintedGet.Services
             }
         }
 
-        internal static void GetThreadImages(string userId, string userSession, string threadId)
+        internal static void GetThreadImages(string userId, string userCookies, string threadId)
         {
             Console.WriteLine($"UserId : {userId}");
             Console.WriteLine($"UserThreadId : {threadId}");
-            Console.WriteLine($"Session : \r\n{userSession}");
+            Console.WriteLine($"Cookies : \r\n{userCookies}");
 
             using (var client = new WebClient())
             {
-                client.Headers.Add(HttpRequestHeader.Cookie, $"_vinted_fr_session={userSession}");
+                client.Headers.Add(HttpRequestHeader.Cookie, userCookies);
                 client.Headers.Add("Accept-Encoding", $"identity");
-                client.Headers.Add("User-Agent", $"python-urllib3/1.26.13");
+                client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
                 //var url0 = $"https://www.vinted.nl/api/v2/users/{userId}/msg_threads";
-                var url = $"https://www.vinted.nl/api/v2/users/{userId}/msg_threads/{threadId}";
+                var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}/msg_threads/{threadId}";
                 Console.WriteLine(url);
                 var json = client.DownloadString(url);
                 var response = DeserializeJson<Domain.Model.MessageThreadResponse>(json);
