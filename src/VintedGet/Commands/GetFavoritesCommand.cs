@@ -3,18 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VintedGet.Infrastructure;
 using VintedGet.Services;
 
 namespace VintedGet.Commands
 {
     internal class GetFavoritesCommand
     {
-        public void Execute(string userId, string userCookies, string operation, string itemLimit)
+        public void Execute(string token, string operation, string itemLimit)
         {
-            VintedProcessor.EnsureHasSession(ref userId, ref userCookies);
-            if (VintedProcessor.HasSession(userId, userCookies))
+            string userId = null;
+            string userCookie = null;
+            if (!string.IsNullOrEmpty(token))
             {
-                VintedProcessor.GetFavorites(operation, itemLimit, userId, userCookies);
+                var jwt = new JwtToken(token);
+                userId = jwt.UserId;
+                userCookie = jwt.TokenCookie;
+            }
+
+            VintedProcessor.EnsureHasSession(ref userId, ref userCookie);
+            if (VintedProcessor.HasSession(userId, userCookie))
+            {
+                VintedProcessor.GetFavorites(operation, itemLimit, userId, userCookie);
             }
         }
     }

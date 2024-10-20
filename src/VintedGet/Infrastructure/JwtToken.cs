@@ -10,11 +10,13 @@ namespace VintedGet.Infrastructure
     public class JwtToken
     {
         public string Token { get; }
+        public string TokenCookie { get; }
         public string UserId { get; }
 
         public JwtToken(string token)
         {
             Token = token;
+            TokenCookie = $"access_token_web={token}";
 
             // Split the JWT into parts
             string[] parts = token.Split('.');

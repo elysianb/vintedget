@@ -38,6 +38,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -75,6 +76,7 @@
     <Compile Include="Infrastructure\CommandLineInterface.cs" />
     <Compile Include="Infrastructure\CommandLineInterfaceExtensions.cs" />
     <Compile Include="Infrastructure\CookieContainerExtentions.cs" />
+    <Compile Include="Infrastructure\JwtToken.cs" />
     <Compile Include="Infrastructure\TextResource.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
