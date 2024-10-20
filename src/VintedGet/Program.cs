@@ -34,10 +34,8 @@ namespace VintedGet
 
             cli.RegisterCommand("login",
                 x => {
-                    var userId = x.GetParameterValue("userid", "uid");
-                    var userSession = x.GetParameterValue("session", "s");
                     var token = args.GetParameterValue("token", "T");
-                    new LoginCommand().Execute(userId, userSession);
+                    new LoginCommand().Execute(token);
                 });
 
             cli.RegisterCommand("whoami",
@@ -71,23 +69,19 @@ namespace VintedGet
 
             cli.RegisterCommand("thread", "t",
                x => {
-                   var userId = args.GetParameterValue("userid", "uid");
-                   var userSession = args.GetParameterValue("session", "s");
                    var token = args.GetParameterValue("token", "T");
                    var threadId = args.GetParameterValue("thread", "t");
 
-                   new GetThreadCommand().Execute(userId, userSession, threadId);
+                   new GetThreadCommand().Execute(token, threadId);
                });
 
             cli.RegisterCommand("favorites", "f",
                x => {
-                   var userId = args.GetParameterValue("userid", "uid");
-                   var userSession = args.GetParameterValue("session", "s");
                    var token = args.GetParameterValue("token", "T");
                    var operation = args.GetParameterValue("download", "d", "download");
                    var itemLimit = args.GetParameterValue("itemlimit", "il");
 
-                   new GetFavoritesCommand().Execute(userId, userSession, operation, itemLimit);
+                   new GetFavoritesCommand().Execute(token, operation, itemLimit);
                });
 
             cli.Run(args);

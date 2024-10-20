@@ -202,7 +202,6 @@ namespace VintedGet.Services
             {
                 client.Headers.Add(HttpRequestHeader.Cookie, cookies);
                 client.Headers.Add("Accept-Encoding", $"identity");
-                client.Headers.Add("Referer", $"{GlobalSettings.Instance.Authority}/member/{userId}");
                 client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
 
                 var url = $"https://www.vinted.fr/api/v2/users/{userId}?localize=false";

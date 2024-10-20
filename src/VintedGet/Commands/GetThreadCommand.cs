@@ -3,19 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VintedGet.Infrastructure;
 using VintedGet.Services;
 
 namespace VintedGet.Commands
 {
     internal class GetThreadCommand
     {
-        public void Execute(string userId, string userCookies, string threadId)
+        public void Execute(string token, string threadId)
         {
-
-            VintedProcessor.EnsureHasSession(ref userId, ref userCookies);
-            if (VintedProcessor.HasSession(userId, userCookies))
+            string userId = null; 
+            string userCookie = null;
+            if (!string.IsNullOrEmpty(token))
             {
-                VintedProcessor.GetThreadImages(userId, userCookies, threadId);
+                var jwt = new JwtToken(token);
+                userId = jwt.UserId;
+                userCookie = jwt.TokenCookie;
+            }
+
+            VintedProcessor.EnsureHasSession(ref userId, ref userCookie);
+            if (VintedProcessor.HasSession(userId, userCookie))
+            {
+                VintedProcessor.GetThreadImages(userId, userCookie, threadId);
             }
         }
     }
