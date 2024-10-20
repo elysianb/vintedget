@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VintedGet.Infrastructure;
 using VintedGet.Services;
 
 namespace VintedGet.Commands
@@ -16,6 +17,8 @@ namespace VintedGet.Commands
             VintedProcessor.EnsureHasSession(ref userId, ref userSession);
             if (VintedProcessor.HasSession(userId, userSession))
             {
+                var jwt = new JwtToken(userSession.Split('=').Last());
+
                 var user = VintedProcessor.GetUser(userId, userSession);
                 Console.WriteLine($"logged as {user.Login}");
             }
