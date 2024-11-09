@@ -1,6 +1,6 @@
 [Home](../README.md)
 
-# How to use Vinted API
+# How Vinted API is used
 
 Last update : november 2024
 

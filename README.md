@@ -10,7 +10,7 @@ https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web
 
 # Internals
 
-[How to use Vinted API](doc/How-to-Vinted-API.md)
+[How Vinted API is used](doc/How-to-Vinted-API.md)
 
 # Documentation
 
