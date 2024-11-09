@@ -8,6 +8,10 @@ https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web
 
 `vget --help` 
 
+# Technical documentation
+
+[How to use Vinted API](doc/How-to-Vinted-API.md)
+
 # Documentation
 
 NAME
