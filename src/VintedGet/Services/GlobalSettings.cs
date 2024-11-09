@@ -14,7 +14,7 @@ namespace VintedGet.Services
 
         public string Authority => "https://www.vinted.fr";
         public string UserAgent => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
-        public string AccpetLanguage => "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7";
+        public string AcceptLanguage => "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7";
 
         public string Output { get; set; }
         public int Delay { get; set; }

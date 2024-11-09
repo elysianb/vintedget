@@ -202,7 +202,7 @@ namespace VintedGet.Services
             {
                 client.Headers.Add(HttpRequestHeader.Cookie, cookies);
                 client.Headers.Add("Accept-Encoding", $"identity");
-                client.Headers.Add("Accept-Language", GlobalSettings.Instance.AccpetLanguage);
+                client.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
                 client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
 
                 var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}?localize=false";
@@ -403,7 +403,7 @@ namespace VintedGet.Services
                 {
                     client.Headers.Add(HttpRequestHeader.Cookie, userCookies);
                     client.Headers.Add("Accept-Encoding", $"identity");
-                    client.Headers.Add("Accept-Language", GlobalSettings.Instance.AccpetLanguage);
+                    client.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
                     client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
 
                     var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}/items/favourites?page={pageCounter}&include_sold=true&per_page={perPages}";
@@ -516,7 +516,7 @@ namespace VintedGet.Services
             {
                 client.Headers.Add(HttpRequestHeader.Cookie, userCookies);
                 client.Headers.Add("Accept-Encoding", $"identity");
-                client.Headers.Add("Accept-Language", GlobalSettings.Instance.AccpetLanguage);
+                client.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
                 client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
                 //var url0 = $"https://www.vinted.nl/api/v2/users/{userId}/msg_threads";
                 var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}/msg_threads/{threadId}";
