@@ -1,12 +1,10 @@
 ﻿# Installation
 
-- Install Dotnet Framework 4.8
+- Install Dotnet [Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer)
 
-https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer
+- Extract binaries from a [release](https://github.com/elysianb/vintedget/releases) into a local directory. 
 
-- Extract binaries from a release into a local directory. Then, use it
-
-`vget --help` 
+- Use it : `vget --help` 
 
 # Internals
 
