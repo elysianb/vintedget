@@ -22,7 +22,7 @@ API call should include the following headers
 | Cookie      | access_token_web=TOKEN (where TOKEN corresponds to the cookie nammed access_token_web from host .www.vinted.fr)
 | Accept-Encoding | identity |
 | Accept-Language | fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7 |
-| UserAgent | (use a valid browser user agent) |
+| User-Agent | (use a valid browser user agent) |
 
 A Proof of Concept can be found in project [Sandbox](../src/Sandbox)
 
