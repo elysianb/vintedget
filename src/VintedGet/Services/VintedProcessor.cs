@@ -14,20 +14,49 @@ using VintedGet.Domain.Model;
 
 namespace VintedGet.Services
 {
+    public class VintedSession
+    {
+        public string UserId { get; set; }
+        public string Cookies { get; set; }
+    }
+
     public class VintedProcessor
     {
-        public static void EnsureHasSession(ref string userId, ref string userSession)
+        public static VintedSession GetSession()
         {
+            string userId = null;
+            string userCookies = null;
+
             if (
-                (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userSession))
-                && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"))
+                System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"))
                 && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"))
                 )
             {
                 userId = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"));
-                userSession = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"));
+                userCookies = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"));
             }
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userCookies))
+            {
+                Console.WriteLine("No user session found. Use vget --login to open a session. For more information, please read help.");
+                return null;
+            }
+
+            return new VintedSession { UserId = userId, Cookies = userCookies };
         }
+
+        //public static void EnsureHasSession(ref string userId, ref string userCookies)
+        //{
+        //    if (
+        //        (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userCookies))
+        //        && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"))
+        //        && System.IO.File.Exists(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"))
+        //        )
+        //    {
+        //        userId = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"));
+        //        userCookies = System.IO.File.ReadAllText(Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"));
+        //    }
+        //}
 
         public static void Logout()
         {
@@ -37,15 +66,16 @@ namespace VintedGet.Services
             Console.WriteLine($"logged out");
         }
 
-        public static bool HasSession(string userId, string userSession)
-        {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userSession))
-            {
-                Console.WriteLine("No user session found. Use vget --login to open a session. For more information, please read help.");
-            }
+        //public static bool HasSession(params string[] args)
+        //{
+        //    if (args.Any(x => string.IsNullOrEmpty(x)))
+        //    {
+        //        Console.WriteLine("No user session found. Use vget --login to open a session. For more information, please read help.");
+        //        return false;
+        //    }
 
-            return !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(userSession);
-        }
+        //    return true;
+        //}
 
         public static string GetItemIdFromUrl(string itemUrl)
         {

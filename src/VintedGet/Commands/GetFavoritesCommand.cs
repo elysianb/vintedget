@@ -10,21 +10,12 @@ namespace VintedGet.Commands
 {
     internal class GetFavoritesCommand
     {
-        public void Execute(string token, string operation, string itemLimit)
+        public void Execute(string operation, string itemLimit)
         {
-            string userId = null;
-            string userCookie = null;
-            if (!string.IsNullOrEmpty(token))
+            var session = VintedProcessor.GetSession();
+            if (session != null)
             {
-                var jwt = new JwtToken(token);
-                userId = jwt.UserId;
-                userCookie = jwt.TokenCookie;
-            }
-
-            VintedProcessor.EnsureHasSession(ref userId, ref userCookie);
-            if (VintedProcessor.HasSession(userId, userCookie))
-            {
-                VintedProcessor.GetFavorites(operation, itemLimit, userId, userCookie);
+                VintedProcessor.GetFavorites(operation, itemLimit, session.UserId, session.Cookies);
             }
         }
     }

@@ -10,21 +10,12 @@ namespace VintedGet.Commands
 {
     internal class GetThreadCommand
     {
-        public void Execute(string token, string threadId)
+        public void Execute(string threadId)
         {
-            string userId = null; 
-            string userCookie = null;
-            if (!string.IsNullOrEmpty(token))
+            var session = VintedProcessor.GetSession();
+            if (session != null)
             {
-                var jwt = new JwtToken(token);
-                userId = jwt.UserId;
-                userCookie = jwt.TokenCookie;
-            }
-
-            VintedProcessor.EnsureHasSession(ref userId, ref userCookie);
-            if (VintedProcessor.HasSession(userId, userCookie))
-            {
-                VintedProcessor.GetThreadImages(userId, userCookie, threadId);
+                VintedProcessor.GetThreadImages(session.UserId, session.Cookies, threadId);
             }
         }
     }

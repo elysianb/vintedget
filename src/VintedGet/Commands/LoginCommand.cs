@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VintedGet.Infrastructure;
 using VintedGet.Services;
 
@@ -10,17 +6,23 @@ namespace VintedGet.Commands
 {
     internal class LoginCommand
     {
-        public void Execute(string token)
+        public void Execute(string accessToken, string refreshToken)
         {
-            var jwt = new JwtToken(token);
+            var jwtAccess = new JwtToken(accessToken);
+            var jwtRefresh = new JwtToken(refreshToken);
 
-            if (VintedProcessor.HasSession(jwt.UserId, jwt.TokenCookie))
+            if (!string.IsNullOrEmpty(jwtAccess.UserId) && !string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refreshToken))
             {
+                var cookies = $"access_token_web={accessToken}; refresh_token_web={refreshToken}";
                 System.IO.Directory.CreateDirectory(GlobalSettings.Instance.SettingsFolder);
-                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"), jwt.UserId);
-                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"), jwt.TokenCookie);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".v_uid"), jwtAccess.UserId);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.SettingsFolder, ".vinted_cookies"), cookies);
+            }
 
-                var user = VintedProcessor.GetUser(jwt.UserId, jwt.TokenCookie);
+            var session = VintedProcessor.GetSession();
+            if (session != null)
+            {
+                var user = VintedProcessor.GetUser(session.UserId, session.Cookies);
                 Console.WriteLine($"logged as {user.Login}");
             }
         }

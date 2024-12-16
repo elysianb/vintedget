@@ -12,14 +12,10 @@ namespace VintedGet.Commands
     {
         public void Execute()
         {
-            string userId = null;
-            string userSession = null;
-            VintedProcessor.EnsureHasSession(ref userId, ref userSession);
-            if (VintedProcessor.HasSession(userId, userSession))
+            var session = VintedProcessor.GetSession();
+            if (session != null)
             {
-                var jwt = new JwtToken(userSession.Split('=').Last());
-
-                var user = VintedProcessor.GetUser(userId, userSession);
+                var user = VintedProcessor.GetUser(session.UserId, session.Cookies);
                 Console.WriteLine($"logged as {user.Login}");
             }
             else
