@@ -57,16 +57,21 @@ OPTIONS
                 local storage.
 
                 Additional needed arguments are the following :
-                -T, --token
+                -AT, --access-token
                     JWT token for read operations related to user. For example,
                     token corresponds to the cookie nammed access_token_web from 
                     host .www.vinted.fr
 
-                    for practical usage, store token in a shell variable and
-                    pass this variable as parameter
+                -RT, --refresh-token
+                    JWT token for read operations related to user. For example,
+                    token corresponds to the cookie nammed refresh_token_web from 
+                    host .www.vinted.fr
+
+                for practical usage, store token in a shell variable and
+                pass this variable as parameter
 
                 Example:
-                  vget --login -T $token
+                  vget --login -AT $accessToken -RT $refreshToken
 
         --whoami
                 If logged, display the login stored in vget local storage
@@ -158,24 +163,21 @@ OPTIONS
                 thread id, and a .vget-response.html file and also a 
                 .vget-response.json file are created in the folder. 
 
-                If you have previously executed vget --login command, you can
-                use it like the following examples.
+                You need to have previously executed vget --login command
 
                 Examples:
                   vget --thread 123456
                   vget --t 123456
-                
-                Additional arguments are needed if you want to download photos 
-                without login or if you want to use a particular identity :
-                -T, --token
 
                 Examples:
-                  vget --thread 123456 -T $token
-                  vget --t 123456 -T $token
+                  vget --thread 123456
+                  vget --t 123456
 
         -f, --favorites
                 Execute operation on favorites list of authenticated user. 
                 Favorites are saved in a csv file with the user id
+
+                You need to have previously executed vget --login command
 
                 Available operations:
                 -l, --list
@@ -194,21 +196,9 @@ OPTIONS
                     vget --favorites -dl
                     vget -f -dl
 
-                Additional operation parameters:
-                -il, --itemlimit
-                  If item url found, limit operation after the item limit.
-
                   Examples:
                     vget --favorites -l -il https://www.vinted.fr/items/1234567890-sample
                     vget --favorites -dl -il https://www.vinted.fr/items/1234567890-sample
-
-                Additional arguments are needed if you want to download photos 
-                without login or if you want to use a particular identity :
-                -T, --token
-
-                Examples:
-                  vget --favorites -l -T $token
-                  vget --favorites -dl -T $token
 
         -h, --help
                 Display this manual page
