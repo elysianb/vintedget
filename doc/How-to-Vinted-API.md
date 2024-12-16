@@ -19,7 +19,7 @@ API call should include the following headers
 
 | Header name | Value
 |-------------|----------------
-| Cookie      | access_token_web=TOKEN1; refresh_token_web=TOKEN2 (where TOKEN1 and TOKEN2 corresponds to the cookies from host .www.vinted.fr)
+| Cookie      | access_token_web=TOKEN1; refresh_token_web=TOKEN2 (where TOKEN1 and TOKEN2 corresponds to the cookies with the same name from host .www.vinted.fr)
 | Accept-Encoding | identity |
 | Accept-Language | fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7 |
 | User-Agent | (use a valid browser user agent) |
