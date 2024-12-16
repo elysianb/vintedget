@@ -2,7 +2,7 @@
 
 # How Vinted API is used
 
-Last update : november 2024
+Last update : december 2024
 
 # Get user informations (account, favourites, messages)
 Base URL used for API call is the following : https://www.vinted.fr/api/v2
@@ -19,7 +19,7 @@ API call should include the following headers
 
 | Header name | Value
 |-------------|----------------
-| Cookie      | access_token_web=TOKEN (where TOKEN corresponds to the cookie nammed access_token_web from host .www.vinted.fr)
+| Cookie      | access_token_web=TOKEN1; refresh_token_web=TOKEN2 (where TOKEN1 and TOKEN2 corresponds to the cookies from host .www.vinted.fr)
 | Accept-Encoding | identity |
 | Accept-Language | fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7 |
 | User-Agent | (use a valid browser user agent) |
