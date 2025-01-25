@@ -2,7 +2,7 @@
 
 # How Vinted API is used
 
-Last update : december 2024
+Last update : january 2025
 
 # Get user informations (account, favourites, messages)
 Base URL used for API call is the following : https://www.vinted.fr/api/v2
