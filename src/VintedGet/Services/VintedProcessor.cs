@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VintedGet.Infrastructure;
 using VintedGet.Domain.Model;
+using System.Text.RegularExpressions;
 
 namespace VintedGet.Services
 {
@@ -322,8 +323,7 @@ namespace VintedGet.Services
 
                         if (httpResponse.StatusCode == HttpStatusCode.NotFound)
                         {
-                            var json = ExtractContent(httpBody, "<script id=\"__NEXT_DATA__\" type=\"application/json\">", "</script>");
-                            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-response.json"), json);
+                            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-response.html"), httpBody);
                             System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-summary.log"),
                                 $"url={url}{System.Environment.NewLine}statusCode={httpResponse.StatusCode}{System.Environment.NewLine}reasonPhrase={httpResponse.ReasonPhrase}");
                             
@@ -334,12 +334,35 @@ namespace VintedGet.Services
                     {
                         var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
                         System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
-                        var json = ExtractContent(httpBody, "<script id=\"__NEXT_DATA__\" type=\"application/json\">", "</script>");
-                        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), json);
 
-                        var itemResponse = DeserializeJson<ItemResponse>(json);
+                        var dtoString = string.Empty;
+                        var pattern = @"<script.*?>(.*?)<\/script>";
+                        MatchCollection matches = Regex.Matches(httpBody, pattern, RegexOptions.Singleline);
+                        foreach (Match match in matches)
+                        {
+                            string scriptContent = match.Groups[1].Value;
 
-                        item = itemResponse.Properties.PageProperties.ItemDto;
+                            // Check if "full_size_url" exists in the script content
+                            if (scriptContent.Contains("itemDto"))
+                            {
+                                var startToken = "{\\\"itemDto\\\"";
+                                dtoString = scriptContent.Substring(scriptContent.IndexOf(startToken));
+                                var lastIndex = dtoString.LastIndexOf('}');
+                                dtoString = lastIndex >= 0 ? dtoString.Substring(0, lastIndex + 1) : dtoString;
+                                dtoString = dtoString.Replace("\\\"", "\"");
+
+                                System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), dtoString);
+                                break;
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(dtoString))
+                        {
+
+                            var properties = DeserializeJson<PageProperties>(dtoString);
+
+                            item = properties.ItemDto;
+                        }
                     }
                 }
             } while (item == null && ++retryCount <= GlobalSettings.Instance.MaxRetry);

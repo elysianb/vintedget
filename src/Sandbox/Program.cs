@@ -59,20 +59,22 @@ namespace Sandbox
         static Dictionary<string, string> GetHeaders()
         {
             var headers = new Dictionary<string, string>();
-            var fileContent = File.ReadAllText("Headers.txt");
-            File.WriteAllText("Headers.formated.txt", fileContent.Replace("; ", System.Environment.NewLine));
-
-            var headersString = File.ReadAllLines("Headers.formated.txt");
-            foreach(string line in headersString)
+            var fileContent = File.ReadAllLines("Headers.txt");
+            var key = string.Empty;
+            var value = string.Empty;
+            foreach (var line in fileContent)
             {
-                var keyName = line.Split('=').First();
-                var keyValue = line.Substring(keyName.Length + 1);
-
-                if (!headers.ContainsKey(keyName))
+                if (line.EndsWith(":"))
                 {
-                    headers.Add(keyName, keyValue);
+                    key = line.TrimEnd(':');
+                }
+                else
+                {
+                    value = line;
+                    headers[key] = value;
                 }
             }
+
             //for (int i = 0; i < headersString.Length; i++)
             //{
             //    if (!headersString[i].StartsWith(":"))
