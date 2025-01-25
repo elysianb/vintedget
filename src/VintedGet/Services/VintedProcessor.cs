@@ -342,7 +342,6 @@ namespace VintedGet.Services
                         {
                             string scriptContent = match.Groups[1].Value;
 
-                            // Check if "full_size_url" exists in the script content
                             if (scriptContent.Contains("itemDto"))
                             {
                                 var startToken = "{\\\"itemDto\\\"";
@@ -358,7 +357,6 @@ namespace VintedGet.Services
 
                         if (!string.IsNullOrEmpty(dtoString))
                         {
-
                             var properties = DeserializeJson<PageProperties>(dtoString);
 
                             item = properties.ItemDto;
