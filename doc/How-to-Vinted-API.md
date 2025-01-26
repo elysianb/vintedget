@@ -33,7 +33,7 @@ Items information are retrieved directly from the public item page, without auth
 
 https://www.vinted.fr/items/{itemId}
 
-From the page body, item information are extracted from a `script` element containing a serialized `idemDto`
+From the page body, item information are extracted from a `script` element containing a serialized `itemDto`
 
 Data are stored in json format.
 
