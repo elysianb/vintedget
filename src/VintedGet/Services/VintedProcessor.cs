@@ -348,7 +348,7 @@ namespace VintedGet.Services
                                 dtoString = scriptContent.Substring(scriptContent.IndexOf(startToken));
                                 var lastIndex = dtoString.LastIndexOf('}');
                                 dtoString = lastIndex >= 0 ? dtoString.Substring(0, lastIndex + 1) : dtoString;
-                                dtoString = dtoString.Replace("\\\"", "\"");
+                                dtoString = dtoString.Replace("\\\"", "\"").Replace("\\\\\"", "\\\"").Replace("\\\\n", "\\n");
 
                                 System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), dtoString);
                                 break;
