@@ -11,10 +11,17 @@ namespace VintedGet.Domain.Model
     [DataContract]
     public class MessageThread
     {
-        [DataMember(Name = "item")]
-        public ItemDto Item { get; set; }
+        [DataMember(Name = "transaction")]
+        public TransactionDto Transaction { get; set; }
 
         [DataMember(Name = "messages")]
         public MessageBody[] Messages { get; set; }
+    }
+
+    [DataContract]
+    public class TransactionDto
+    {
+        [DataMember(Name = "item_id")]
+        public string ItemId { get; set; }
     }
 }
