@@ -17,6 +17,9 @@ namespace VintedGet.Domain.Model
         [DataMember(Name = "title")]
         public string Title { get; set; }
 
+        [DataMember(Name = "brand_title")]
+        public string BrandTitle { get; set; }
+
         [DataMember(Name = "brand_dto")]
         public BrandDto Brand { get; set; }
 
@@ -32,4 +35,43 @@ namespace VintedGet.Domain.Model
         [DataMember(Name = "user")]
         public User User { get; set; }
     }
+
+    [DataContract]
+    public class PluginDto
+    {
+        [DataMember(Name = "data")]
+        public DataDto Data { get; set; }
+
+        [DataMember(Name = "type")]
+        public string Type { get; set; }
+    }
+
+    [DataContract]
+    public class DataDto
+    {
+        [DataMember(Name = "attributes")]
+        public AttributeDto[] Attributes { get; set; }
+    }
+
+    [DataContract]
+    public class AttributeDto
+    {
+        [DataMember(Name = "code")]
+        public string Code { get; set; }
+
+        [DataMember(Name = "data")]
+        public AttributeDataDto Data { get; set; }
+    }
+
+    [DataContract]
+    public class AttributeDataDto
+    {
+        [DataMember(Name = "id")]
+        public int Id { get; set; }
+        [DataMember(Name = "title")]
+        public string Title { get; set; }
+        [DataMember(Name = "value")]
+        public string Value { get; set; }
+    }
 }
+

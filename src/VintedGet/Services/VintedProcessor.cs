@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using VintedGet.Infrastructure;
 using VintedGet.Domain.Model;
 using System.Text.RegularExpressions;
+using System.Security.Policy;
 
 namespace VintedGet.Services
 {
@@ -118,13 +119,33 @@ namespace VintedGet.Services
             return RemoveDiacritics(s.Replace("/", "").Replace(" ", "").Replace("'", ""));
         }
 
-        public static string GetItemMetadata(Domain.Model.ItemDto item)
+        public static string GetItemMetadata(Domain.Model.ItemDto item, Domain.Model.PluginDto[] plugins = null)
         {
-            var brand = CleanString(item.Brand?.Title);
+            var brand = CleanString(item.BrandTitle) ?? CleanString(item.Brand?.Title);
             var size = CleanString(item.Size);
             if (!string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(size))
             {
                 return $"{item.Id}-{brand}-T{size}";
+            }
+
+            if (plugins != null)
+            {
+                var plugin = plugins.FirstOrDefault(x => x.Type == "attributes");
+                if (plugin != null)
+                {
+                    brand = CleanString(plugin.Data.Attributes.FirstOrDefault(x => x.Code == "brand")?.Data.Value);
+                    size = CleanString(plugin.Data.Attributes.FirstOrDefault(x => x.Code == "size")?.Data.Value);
+
+                    if (!string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(size))
+                    {
+                        return $"{item.Id}-{brand}-T{size}";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(brand))
+            {
+                return $"{item.Id}-{brand}";
             }
 
             return $"{item.Id}";
@@ -147,7 +168,7 @@ namespace VintedGet.Services
                         Console.WriteLine($"  Retry         : {retryCount}/{maxRetry}");
                     }
 
-                    Thread.Sleep(sleepDurationInMilliseconds);
+                    Sleep(sleepDurationInMilliseconds);
                     json = client.DownloadString(url);
                     System.IO.File.WriteAllText(filename, json);
 
@@ -160,6 +181,11 @@ namespace VintedGet.Services
             } while (!success && retryCount++ < maxRetry);
 
             return json;
+        }
+
+        public static void Sleep(int sleepDurationInMilliseconds)
+        {
+            Thread.Sleep(sleepDurationInMilliseconds + new Random().Next(0, 500));
         }
 
         public static void DownloadFile(WebClient client, string url, string filename, int sleepDurationInMilliseconds, int maxRetry)
@@ -178,7 +204,7 @@ namespace VintedGet.Services
                         Console.WriteLine($"  Retry         : {retryCount}/{maxRetry}");
                     }
 
-                    Thread.Sleep(sleepDurationInMilliseconds);
+                    Sleep(sleepDurationInMilliseconds);
                     client.DownloadFile(url, filename);
                     success = true;
                 }
@@ -249,7 +275,91 @@ namespace VintedGet.Services
             }
         }
 
-        public static void GetPhotos(HttpClient httpClient, string csrfToken, string url, string output = null)
+        public static PageProperties GetItemStringFromHtml(string itemId, string httpBody, string output)
+        {
+            var dtoString = string.Empty;
+            var pattern = @"<script.*?>(.*?)<\/script>";
+            MatchCollection matches = Regex.Matches(httpBody, pattern, RegexOptions.Singleline);
+            foreach (Match match in matches)
+            {
+                string scriptContent = match.Groups[1].Value;
+
+                if (scriptContent.Contains("itemDto"))
+                {
+                    var startToken = "{\\\"itemDto\\\"";
+                    dtoString = scriptContent.Substring(scriptContent.IndexOf(startToken));
+                    var lastIndex = dtoString.LastIndexOf('}');
+                    dtoString = lastIndex >= 0 ? dtoString.Substring(0, lastIndex + 1) : dtoString;
+                    dtoString = dtoString.Replace("\\\"", "\"").Replace("\\\\\"", "\\\"").Replace("\\\\n", "\\n");
+
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), dtoString);
+                    break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(dtoString))
+            {
+                var properties = DeserializeJson<PageProperties>(dtoString);
+
+                return properties;
+            }
+
+            return null;
+        }
+
+        public static (Domain.Model.ItemDto, Domain.Model.PluginDto[]) GetItemFromId(HttpClient httpClient, string itemId, List<string> logs, string output = null)
+        {
+            if (output == null)
+            {
+                output = GlobalSettings.Instance.Output;
+            }
+
+            var uri = $"{GlobalSettings.Instance.Authority}/items/{itemId}";
+
+            Domain.Model.ItemDto item = null;
+            Domain.Model.PluginDto[] plugins = null;
+
+            using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                //request.Headers.Add("Cookie", userCookies);
+                request.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
+                request.Headers.Add("Accept-Encoding", $"identity");
+                request.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
+                var httpResponse = httpClient.SendAsync(request).Result;
+                logs.Add($"statusCode={httpResponse.StatusCode}");
+                logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
+
+                if (httpResponse.StatusCode != HttpStatusCode.OK)
+                {
+                    Console.WriteLine($"statusCode={httpResponse.StatusCode}");
+                    Console.WriteLine($"reasonPhrase={httpResponse.ReasonPhrase}");
+                    var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
+
+                    if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-response.html"), httpBody);
+                        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-summary.log"),
+                            $"url={uri}{System.Environment.NewLine}statusCode={httpResponse.StatusCode}{System.Environment.NewLine}reasonPhrase={httpResponse.ReasonPhrase}");
+
+                        return (item, plugins);
+                    }
+                }
+                else
+                {
+                    var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
+
+                    var pageProperties = GetItemStringFromHtml(itemId, httpBody, output);
+                    item = pageProperties.ItemDto;
+                    plugins = pageProperties.Plugins;
+                }
+            }
+
+            return (item, plugins);
+        }
+
+        public static void GetPhotos(HttpClient httpClient, string userCookies, string url, string output = null)
         {
             if (output == null)
             {
@@ -264,105 +374,55 @@ namespace VintedGet.Services
             string[] articlePhotos;
             string profilePhoto;
             Domain.Model.ItemDto item = null;
+            Domain.Model.PluginDto[] plugins = null;
 
             var uri = $"{GlobalSettings.Instance.Authority}/items/{itemId}";
-            //var uri = $"https://www.vinted.fr/api/v2/items/{itemId}";
-
-            //int retryCount = 0;
-            //do
-            //{
-            //    Console.WriteLine($"Getting data (retry {retryCount})...");
-            //    using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
-            //    {
-            //        Thread.Sleep(sleepDurationInMilliseconds);
-
-            //        request.Headers.Add("Accept-Encoding", $"identity");
-            //        request.Headers.Add("User-Agent", $"python-urllib3/1.26.13");
-            //        request.Headers.Add("X-CSRF-Token", csrfToken);
-            //        Console.WriteLine($"GET:{uri}");
-            //        var httpResponse = httpClient.SendAsync(request).Result;
-            //        logs.Add($"statusCode={httpResponse.StatusCode}");
-            //        logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
-            //        if (httpResponse.StatusCode == HttpStatusCode.NotFound)
-            //        {
-            //            Console.WriteLine("Not Found.");
-            //            System.IO.File.WriteAllLines(System.IO.Path.Combine(output, $"{itemId}.vget-summary.log"), logs);
-            //            return;
-            //        }
-
-            //        var json = httpResponse.Content.ReadAsStringAsync().Result;
-            //        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), json);
-
-            //        var response = VintedProcessor.DeserializeJson<Domain.ItemResponse>(json);
-
-            //        item = response.Item;
-            //    }
-
-            //} while (item == null && ++retryCount <= maxRetry);
-
+            //var uri = $"{GlobalSettings.Instance.Authority}/api/v2/items/{itemId}";
 
             int retryCount = 0;
 
+            Console.WriteLine($"  Getting data : {url}");
             do
             {
-                Console.WriteLine($"Getting data (retry {retryCount}) : {url} ...");
+                Console.WriteLine($"  retry {retryCount} : {uri} ...");
 
-                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
-                {
-                    request.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
-                    var httpResponse = httpClient.SendAsync(request).Result;
-                    logs.Add($"statusCode={httpResponse.StatusCode}");
-                    logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
+                (item, plugins) = GetItemFromId(httpClient, itemId, logs, output);
+                //using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
+                //{
+                //    //request.Headers.Add("Cookie", userCookies);
+                //    request.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
+                //    request.Headers.Add("Accept-Encoding", $"identity");
+                //    request.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
+                //    var httpResponse = httpClient.SendAsync(request).Result;
+                //    logs.Add($"statusCode={httpResponse.StatusCode}");
+                //    logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
 
-                    if (httpResponse.StatusCode != HttpStatusCode.OK)
-                    {
-                        Console.WriteLine($"statusCode={httpResponse.StatusCode}");
-                        Console.WriteLine($"reasonPhrase={httpResponse.ReasonPhrase}");
-                        var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
-                        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
+                //    if (httpResponse.StatusCode != HttpStatusCode.OK)
+                //    {
+                //        Console.WriteLine($"statusCode={httpResponse.StatusCode}");
+                //        Console.WriteLine($"reasonPhrase={httpResponse.ReasonPhrase}");
+                //        var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
+                //        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
 
-                        if (httpResponse.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-response.html"), httpBody);
-                            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-summary.log"),
-                                $"url={url}{System.Environment.NewLine}statusCode={httpResponse.StatusCode}{System.Environment.NewLine}reasonPhrase={httpResponse.ReasonPhrase}");
-                            
-                            return;
-                        }
-                    }
-                    else 
-                    {
-                        var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
-                        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
+                //        if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+                //        {
+                //            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-response.html"), httpBody);
+                //            System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-summary.log"),
+                //                $"url={url}{System.Environment.NewLine}statusCode={httpResponse.StatusCode}{System.Environment.NewLine}reasonPhrase={httpResponse.ReasonPhrase}");
 
-                        var dtoString = string.Empty;
-                        var pattern = @"<script.*?>(.*?)<\/script>";
-                        MatchCollection matches = Regex.Matches(httpBody, pattern, RegexOptions.Singleline);
-                        foreach (Match match in matches)
-                        {
-                            string scriptContent = match.Groups[1].Value;
+                //            return;
+                //        }
+                //    }
+                //    else 
+                //    {
+                //        var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
+                //        System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
 
-                            if (scriptContent.Contains("itemDto"))
-                            {
-                                var startToken = "{\\\"itemDto\\\"";
-                                dtoString = scriptContent.Substring(scriptContent.IndexOf(startToken));
-                                var lastIndex = dtoString.LastIndexOf('}');
-                                dtoString = lastIndex >= 0 ? dtoString.Substring(0, lastIndex + 1) : dtoString;
-                                dtoString = dtoString.Replace("\\\"", "\"").Replace("\\\\\"", "\\\"").Replace("\\\\n", "\\n");
-
-                                System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), dtoString);
-                                break;
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(dtoString))
-                        {
-                            var properties = DeserializeJson<PageProperties>(dtoString);
-
-                            item = properties.ItemDto;
-                        }
-                    }
-                }
+                //        var pageProperties = GetItemStringFromHtml(itemId, httpBody, output);
+                //        item = pageProperties.ItemDto;
+                //        plugins = pageProperties.Plugins;
+                //    }
+                //}
             } while (item == null && ++retryCount <= GlobalSettings.Instance.MaxRetry);
 
             if (item == null)
@@ -377,7 +437,7 @@ namespace VintedGet.Services
 
                 Console.WriteLine("Article Photos:");
                 var photosCounter = 1;
-                var itemMetadata = GetItemMetadata(item);
+                var itemMetadata = GetItemMetadata(item, plugins);
                 foreach (var photo in item.Photos)
                 {
                     logs.Add("image=" + photo.FullSizeUrl);
@@ -473,7 +533,7 @@ namespace VintedGet.Services
                     foreach (var item in response.Items)
                     {
                         var line = string.Empty;
-                        var brand = CleanString(item.Brand.Title);
+                        var brand = CleanString(item.BrandTitle) ?? CleanString(item.Brand?.Title);
                         var size = CleanString(item.Size);
                         var title = item.Title.Replace(";", "");
 
@@ -570,15 +630,23 @@ namespace VintedGet.Services
                 client.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
                 client.Headers.Add("User-Agent", GlobalSettings.Instance.UserAgent);
                 //var url0 = $"https://www.vinted.nl/api/v2/users/{userId}/msg_threads";
-                var url = $"{GlobalSettings.Instance.Authority}/api/v2/users/{userId}/msg_threads/{threadId}";
+                var url = $"{GlobalSettings.Instance.Authority}/api/v2/conversations/{threadId}";
                 Console.WriteLine(url);
                 var json = client.DownloadString(url);
                 var response = DeserializeJson<Domain.Model.MessageThreadResponse>(json);
 
                 //System.IO.Directory.CreateDirectory(System.IO.Path.Combine(output, threadId));
-                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.Output, $"{response.MessageThread.Item.Id}-{threadId}.vget-response.json"), json);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.Output, $"{response.MessageThread.Transaction.ItemId}-{threadId}.vget-response.json"), json);
 
-                var itemMetadata = GetItemMetadata(response.MessageThread.Item);
+                Domain.Model.ItemDto item = null;
+                Domain.Model.PluginDto[] plugins = null;
+
+                using (var httpClient = new HttpClient())
+                {
+                    (item, plugins) = GetItemFromId(httpClient, response.MessageThread.Transaction.ItemId.ToString(), new List<string>(), null);
+                }
+
+                var itemMetadata = item != null ? GetItemMetadata(item) : "0000000000";
                 var photoCounter = 0;
                 foreach (var message in response.MessageThread.Messages)
                 {

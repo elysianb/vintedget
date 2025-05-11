@@ -11,7 +11,7 @@ namespace VintedGet.Domain.Model
     [DataContract]
     public class MessageThreadResponse
     {
-        [DataMember(Name = "msg_thread")]
+        [DataMember(Name = "conversation")]
         public MessageThread MessageThread { get; set; }
     }
 }

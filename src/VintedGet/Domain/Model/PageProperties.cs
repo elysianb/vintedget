@@ -13,5 +13,8 @@ namespace VintedGet.Domain.Model
     {
         [DataMember(Name = "itemDto")]
         public ItemDto ItemDto { get; set; }
+
+        [DataMember(Name = "plugins")]
+        public PluginDto[] Plugins { get; set; }
     }
 }
