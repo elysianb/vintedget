@@ -1,12 +1,4 @@
 ﻿
-# Installation
-
-- Install Dotnet [Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer)
-
-- Extract binaries from [last release](https://github.com/elysianb/vintedget/releases) into a local directory. 
-
-- Use it : `vget --help` 
-
 # Quick Start
 
 From Windows Command Prompt, type `vget [item-url]`. Example :
@@ -14,6 +6,14 @@ From Windows Command Prompt, type `vget [item-url]`. Example :
 ```
 vget https://www.vinted.fr/items/6971438023-manette-sega-megadrive-2
 ```
+
+# Installation
+
+- Install Dotnet [Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer)
+
+- Extract binaries from [last release](https://github.com/elysianb/vintedget/releases) into a local directory. 
+
+- Use it : `vget --help` 
 
 # Internals
 
