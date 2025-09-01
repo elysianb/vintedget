@@ -2,7 +2,7 @@
 
 # How Vinted API is used
 
-Last update : january 2025
+Last update : september 2025
 
 # Get user informations (account, favourites, messages)
 Base URL used for API call is the following : https://www.vinted.fr/api/v2
@@ -33,10 +33,12 @@ Items information are retrieved directly from the public item page, without auth
 
 https://www.vinted.fr/items/{itemId}
 
-From the page body, item information are extracted from a `script` element containing a serialized `itemDto`
+From the page body, item information are extracted from a `script` element containing a serialized `item` and `brand_dto`
 
-Data are stored in json format.
-
+Data are stored in stringified json, from Next.js hydration scripts functions like `self.__next_f.push`. We need to :
+- extract the stringified json
+- convert it to json object
+- extract `item` and `brand_dto` from the json Tree.
 
 ### By using API endpoint, but need authentication
 API can be used but endpoint call needs headers for authentication as described in API section above.
@@ -45,7 +47,6 @@ Base URL : https://www.vinted.fr/api/v2
 
 | Endpoint | Description
 |----------|------------
-| /items/{itemId} | Get item informations
-
+| /items/{itemId}/more?content_source=other_user_items | Get item informations
 
 [Home](../README.md)
