@@ -36,6 +36,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Json, Version=4.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Json.4.8.0\lib\net462\System.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
@@ -76,6 +79,7 @@
     <Compile Include="Infrastructure\CommandLineInterface.cs" />
     <Compile Include="Infrastructure\CommandLineInterfaceExtensions.cs" />
     <Compile Include="Infrastructure\CookieContainerExtentions.cs" />
+    <Compile Include="Infrastructure\JsonTools.cs" />
     <Compile Include="Infrastructure\JwtToken.cs" />
     <Compile Include="Infrastructure\TextResource.cs" />
     <Compile Include="Program.cs" />
@@ -85,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Manual.txt" />

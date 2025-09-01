@@ -34,6 +34,9 @@ namespace VintedGet.Domain.Model
 
         [DataMember(Name = "user")]
         public User User { get; set; }
+
+        [DataMember(Name = "seller_photo")]
+        public Photo SellerPhoto { get; set; }
     }
 
     [DataContract]
