@@ -11,16 +11,21 @@ namespace VintedGet.Infrastructure
     {
         public static JsonValue GetFromNextJSHydration(string javascript)
         {
-            var startToken1 = "self.__next_f.push(";
-            var endToken1 = ")";
-            var scriptContent = javascript.Substring(startToken1.Length);
-            scriptContent = scriptContent.Substring(0, scriptContent.Length - 1);
+            var startToken = "self.__next_f.push(";
+            var endToken = ")";
+            var scriptContent = javascript.Substring(startToken.Length);
+            scriptContent = scriptContent.Substring(0, scriptContent.Length - endToken.Length);
+
             var jsonValue = System.Json.JsonValue.Parse(scriptContent);
             var rawValue = jsonValue[1].ToString();
             int colonIndex = rawValue.IndexOf(':');
             rawValue = rawValue.Substring(colonIndex + 1);
             rawValue = rawValue.Substring(0, rawValue.Length - 1);
-            rawValue = rawValue.Replace("\\\\\\\"", "'").Replace("\\\"", "\"").Replace("\\n", "").Replace("\\", "");
+            rawValue = rawValue
+                .Replace("\\\\\\\"", "'") // replace double quotes to simple quotes in string property values
+                .Replace("\\\"", "\"") // replace double quotes for json properties name and value delimiters
+                .Replace("\\n", "") // remove the newline at the end of the rawValue, and eventually other newlines
+                .Replace("\\", ""); // remove all other remaining escape chars
 
             jsonValue = System.Json.JsonValue.Parse(rawValue);
             return jsonValue;
