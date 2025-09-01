@@ -4,7 +4,7 @@
 
 Last update : september 2025
 
-For complete documentation on Vinted API documentation, go here : https://pro-docs.svc.vinted.com/#vinted-pro-integrations
+For complete documentation on Vinted API, go here : https://pro-docs.svc.vinted.com/#vinted-pro-integrations
 
 # Get user informations (account, favourites, messages)
 Base URL used for API call is the following : https://www.vinted.fr/api/v2
