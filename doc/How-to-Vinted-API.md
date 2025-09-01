@@ -40,13 +40,13 @@ Data are stored in stringified json, from Next.js hydration scripts functions li
 - convert it to json object
 - extract `item` and `brand_dto` from the json Tree.
 
-### By using API endpoint, but need authentication
+### By using API endpoint, but need authentication (maybe not public endpoint anymore)
 API can be used but endpoint call needs headers for authentication as described in API section above.
 
 Base URL : https://www.vinted.fr/api/v2
 
 | Endpoint | Description
 |----------|------------
-| /items/{itemId}/more?content_source=other_user_items | Get item informations
+| /items/{itemId} | Get item informations
 
 [Home](../README.md)
