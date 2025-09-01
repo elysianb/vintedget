@@ -36,11 +36,25 @@ namespace Sandbox
         {
             using (var client = new WebClient())
             {
-                //foreach (var header in GetHeaders())
-                //{
-                //    client.Headers.Add(header.Key, header.Value);
-                //    Console.WriteLine($"{header.Key}  {header.Value}");
-                //}
+                foreach (var header in GetHeaders())
+                {
+                    if (header.Key.StartsWith(":"))
+                    {
+                        continue;
+                    }
+
+                    if (header.Key.ToLower() == "content-length")
+                    {
+                        continue;
+                        client.Headers.Add(HttpRequestHeader.ContentLength, header.Value);
+                    }
+                    else
+                    {
+                        client.Headers.Add(header.Key, header.Value);
+                    }
+                    
+                    Console.WriteLine($"{header.Key}  {header.Value}");
+                }
 
                 var url = $"https://www.vinted.fr/api/v2/users/{userId}?localize=false";
                 Console.WriteLine(url);

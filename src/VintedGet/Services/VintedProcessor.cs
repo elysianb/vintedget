@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
+using System.Net.Http;
+using System.Reflection;
 using System.Runtime.Serialization.Json;
+using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using VintedGet.Infrastructure;
 using VintedGet.Domain.Model;
-using System.Text.RegularExpressions;
-using System.Security.Policy;
+using VintedGet.Infrastructure;
 
 namespace VintedGet.Services
 {
@@ -139,6 +140,11 @@ namespace VintedGet.Services
                     if (!string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(size))
                     {
                         return $"{item.Id}-{brand}-T{size}";
+                    }
+
+                    if (!string.IsNullOrEmpty(size))
+                    {
+                        return $"{item.Id}-noBrand-T{size}";
                     }
                 }
             }
@@ -278,30 +284,28 @@ namespace VintedGet.Services
         public static PageProperties GetItemStringFromHtml(string itemId, string httpBody, string output)
         {
             var dtoString = string.Empty;
-            var pattern = @"<script.*?>(.*?)<\/script>";
+            var pattern = @"<script>(.*?)<\/script>";
             MatchCollection matches = Regex.Matches(httpBody, pattern, RegexOptions.Singleline);
             foreach (Match match in matches)
             {
                 string scriptContent = match.Groups[1].Value;
 
-                if (scriptContent.Contains("itemDto"))
+                if (scriptContent.Contains("item") && scriptContent.Contains("brand_dto"))
                 {
-                    var startToken = "{\\\"itemDto\\\"";
-                    dtoString = scriptContent.Substring(scriptContent.IndexOf(startToken));
-                    var lastIndex = dtoString.LastIndexOf('}');
-                    dtoString = lastIndex >= 0 ? dtoString.Substring(0, lastIndex + 1) : dtoString;
-                    dtoString = dtoString.Replace("\\\"", "\"").Replace("\\\\\"", "\\\"").Replace("\\\\n", "\\n");
+                    var jsonValue = JsonTools.GetFromNextJSHydration(scriptContent);
+                    var items = JsonTools.FindByProperty(jsonValue, "item");
+                    var plugins = JsonTools.FindByProperty(jsonValue, "plugins");
 
-                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), dtoString);
-                    break;
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), scriptContent);
+                    var itemObject = DeserializeJson<ItemDto>(items.First().ToString());
+                    var pluginsObject = DeserializeJson<PluginDto[]>(plugins.Last().ToString());
+
+                    return new PageProperties
+                    {
+                        ItemDto = itemObject,
+                        Plugins = pluginsObject
+                    };
                 }
-            }
-
-            if (!string.IsNullOrEmpty(dtoString))
-            {
-                var properties = DeserializeJson<PageProperties>(dtoString);
-
-                return properties;
             }
 
             return null;
@@ -373,6 +377,7 @@ namespace VintedGet.Services
 
             string[] articlePhotos;
             string profilePhoto;
+            string profilePhotoId;
             Domain.Model.ItemDto item = null;
             Domain.Model.PluginDto[] plugins = null;
 
@@ -433,7 +438,8 @@ namespace VintedGet.Services
             using (var client = new WebClient())
             {
                 articlePhotos = item.Photos.Select(x => x.FullSizeUrl).ToArray();
-                profilePhoto = item.User.Photo?.FullSizeUrl;
+                profilePhoto = item.User != null? item.User.Photo?.FullSizeUrl : item.SellerPhoto?.FullSizeUrl;
+                profilePhotoId = item.User != null ? item.User.Photo?.Id : item.SellerPhoto?.Id;
 
                 Console.WriteLine("Article Photos:");
                 var photosCounter = 1;
@@ -452,7 +458,7 @@ namespace VintedGet.Services
                 {
                     logs.Add("profile=" + profilePhoto);
                     var fileName = GetFileNameFromUrl(profilePhoto);
-                    var profileFilename = $"{itemMetadata}-profile-{item.User.Photo.Id}-{fileName}";
+                    var profileFilename = $"{itemMetadata}-profile-{profilePhotoId}-{fileName}";
 
                     DownloadFile(client, profilePhoto, System.IO.Path.Combine(output, profileFilename), GlobalSettings.Instance.Delay, GlobalSettings.Instance.MaxRetry);
                 }
@@ -646,7 +652,7 @@ namespace VintedGet.Services
                     (item, plugins) = GetItemFromId(httpClient, response.MessageThread.Transaction.ItemId.ToString(), new List<string>(), null);
                 }
 
-                var itemMetadata = item != null ? GetItemMetadata(item) : "0000000000";
+                var itemMetadata = item != null ? GetItemMetadata(item, plugins) : "0000000000";
                 var photoCounter = 0;
                 foreach (var message in response.MessageThread.Messages)
                 {
