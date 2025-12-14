@@ -79,6 +79,7 @@
     <Compile Include="Infrastructure\CommandLineInterface.cs" />
     <Compile Include="Infrastructure\CommandLineInterfaceExtensions.cs" />
     <Compile Include="Infrastructure\CookieContainerExtentions.cs" />
+    <Compile Include="Infrastructure\ItemBuilder.cs" />
     <Compile Include="Infrastructure\JsonTools.cs" />
     <Compile Include="Infrastructure\JwtToken.cs" />
     <Compile Include="Infrastructure\TextResource.cs" />

@@ -8,6 +8,7 @@ namespace VintedGet
     {
         static void Main(string[] args)
         {
+            
             GlobalSettings.Instance.Delay = int.Parse(args.GetParameterValue("delay", "d", "250"));
             GlobalSettings.Instance.MaxRetry = int.Parse(args.GetParameterValue("max-retry", "r", "10"));
             GlobalSettings.Instance.Output = args.GetParameterValue("output", "o", ".");
