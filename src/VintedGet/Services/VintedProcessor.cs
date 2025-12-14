@@ -277,38 +277,8 @@ namespace VintedGet.Services
                     return null;
                 }
 
-                return DeserializeJson<Domain.Model.UserResponse>(json).User;
+                return JsonTools.DeserializeJson<Domain.Model.UserResponse>(json).User;
             }
-        }
-
-        public static PageProperties GetItemStringFromHtml(string itemId, string httpBody, string output)
-        {
-            var dtoString = string.Empty;
-            var pattern = @"<script>(.*?)<\/script>";
-            MatchCollection matches = Regex.Matches(httpBody, pattern, RegexOptions.Singleline);
-            foreach (Match match in matches)
-            {
-                string scriptContent = match.Groups[1].Value;
-
-                if (scriptContent.Contains("item") && scriptContent.Contains("brand_dto"))
-                {
-                    var jsonValue = JsonTools.GetFromNextJSHydration(scriptContent);
-                    var items = JsonTools.FindByProperty(jsonValue, "item");
-                    var plugins = JsonTools.FindByProperty(jsonValue, "plugins");
-
-                    System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.json"), scriptContent);
-                    var itemObject = DeserializeJson<ItemDto>(items.First().ToString());
-                    var pluginsObject = DeserializeJson<PluginDto[]>(plugins.Last().ToString());
-
-                    return new PageProperties
-                    {
-                        ItemDto = itemObject,
-                        Plugins = pluginsObject
-                    };
-                }
-            }
-
-            return null;
         }
 
         public static (Domain.Model.ItemDto, Domain.Model.PluginDto[]) GetItemFromId(HttpClient httpClient, string itemId, List<string> logs, string output = null)
@@ -354,7 +324,7 @@ namespace VintedGet.Services
                     var httpBody = httpResponse.Content.ReadAsStringAsync().Result;
                     System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}.vget-response.html"), httpBody);
 
-                    var pageProperties = GetItemStringFromHtml(itemId, httpBody, output);
+                    var pageProperties = ItemBuilder.Extract(itemId, httpBody, output);
                     item = pageProperties.ItemDto;
                     plugins = pageProperties.Plugins;
                 }
@@ -471,16 +441,7 @@ namespace VintedGet.Services
             }
         }
 
-        public static T DeserializeJson<T>(string json)
-        {
-            var instance = typeof(T);
 
-            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(json)))
-            {
-                var deserializer = new DataContractJsonSerializer(instance);
-                return (T)deserializer.ReadObject(ms);
-            }
-        }
 
         public static string ExtractContent(string content, string startToken, string endToken)
         {
@@ -532,7 +493,7 @@ namespace VintedGet.Services
                         break;
                     }
 
-                    var response = DeserializeJson<Domain.Model.FavouritesResponse>(json);
+                    var response = JsonTools.DeserializeJson<Domain.Model.FavouritesResponse>(json);
                     itemsInLastPage = response.Items.Count();
                     Console.WriteLine($"Page {pageCounter} : {itemsInLastPage} item(s)");
                     pageCounter++;
@@ -639,7 +600,7 @@ namespace VintedGet.Services
                 var url = $"{GlobalSettings.Instance.Authority}/api/v2/conversations/{threadId}";
                 Console.WriteLine(url);
                 var json = client.DownloadString(url);
-                var response = DeserializeJson<Domain.Model.MessageThreadResponse>(json);
+                var response = JsonTools.DeserializeJson<Domain.Model.MessageThreadResponse>(json);
 
                 //System.IO.Directory.CreateDirectory(System.IO.Path.Combine(output, threadId));
                 System.IO.File.WriteAllText(System.IO.Path.Combine(GlobalSettings.Instance.Output, $"{response.MessageThread.Transaction.ItemId}-{threadId}.vget-response.json"), json);
