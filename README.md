@@ -1,7 +1,16 @@
-﻿
-# Quick Start
+﻿# Installation
 
-## The basic
+- Install Dotnet [Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer)
+
+- Extract binaries from [last release](https://github.com/elysianb/vintedget/releases) into a local directory. 
+
+- Use it : `vget --help` 
+
+# Internals
+
+[How Vinted API is used](doc/How-to-Vinted-API.md)
+
+# Quick Start
 
 From Windows Command Prompt, type `vget [item-url]`. Example :
 
@@ -52,18 +61,6 @@ Download photos from a conversation (thread_id is found from the url like : http
 ```
 vget --thread <thread_id >
 ```
-
-# Installation
-
-- Install Dotnet [Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer)
-
-- Extract binaries from [last release](https://github.com/elysianb/vintedget/releases) into a local directory. 
-
-- Use it : `vget --help` 
-
-# Internals
-
-[How Vinted API is used](doc/How-to-Vinted-API.md)
 
 # Documentation
 
