@@ -20,7 +20,7 @@ vget https://www.vinted.fr/items/6971438023-manette-sega-megadrive-2
 
 ## Authentication
 
-**For download photos from favorites or conversations, you need to be authenticated**
+**⚠️ For download photos from favorites or conversations, you need to be authenticated**
 
 Get Access Token and Refresh Token, by going to Vinted website, open dev tools, and copy value of access_token_web and refresh_token_web.
 
