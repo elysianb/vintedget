@@ -1,10 +1,56 @@
 ﻿
 # Quick Start
 
+## The basic
+
 From Windows Command Prompt, type `vget [item-url]`. Example :
 
 ```
 vget https://www.vinted.fr/items/6971438023-manette-sega-megadrive-2
+```
+
+## Authentication
+
+**For download photos from favorites or conversations, you need to be authenticated**
+
+Get Access Token and Refresh Token, by going to Vinted website, open dev tools, and copy value of access_token_web and refresh_token_web.
+
+Then authenticate
+```
+vget --login -AT <past access_token_web value> -RT <past refresh_token_web value>
+```
+
+## Download photos from your favorites :
+
+Download only list of favorites
+
+```
+vget --favorites --list
+```
+
+Download only list of favorites, and stop downloading when a specific item is reached
+
+```
+vget --favorites --list -il https://www.vinted.fr/items/1234567890-sample
+```
+
+Download photos of favorites
+
+```
+vget --favorites --download
+```
+
+Download photos of favorites, and stop downloading when a specific item is reached
+
+```
+vget --favorites --download -il https://www.vinted.fr/items/1234567890-sample
+```
+## Download photos from your conversations :
+
+Download photos from a conversation (thread_id is found from the url like : https://www.vinted.fr/inbox/123456789012)
+
+```
+vget --thread <thread_id >
 ```
 
 # Installation
