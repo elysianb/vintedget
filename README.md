@@ -39,13 +39,13 @@ vget --login -AT <past access_token_web value> -RT <past refresh_token_web value
 
 ## Download photos from your favorites :
 
-Download only list of favorites
+Create a .txt file containing link list of your favorites
 
 ```
 vget --favorites --list
 ```
 
-Download only list of favorites, and stop downloading when a specific item is reached
+Create a .txt file containing link list of your favorites, and stop downloading when a specific item is reached
 
 ```
 vget --favorites --list -il https://www.vinted.fr/items/1234567890-sample
