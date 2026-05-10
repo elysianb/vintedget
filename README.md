@@ -39,7 +39,7 @@ vget --login -AT <past access_token_web value> -RT <past refresh_token_web value
 
 ## Download photos from your favorites :
 
-Create a .txt file containing link list of your favorites
+Create a .txt file containing link list of your favorites (and use `vget -b links.txt` to download photos later)
 
 ```
 vget --favorites --list
