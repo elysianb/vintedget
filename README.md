@@ -12,10 +12,18 @@
 
 # Quick Start
 
-From Windows Command Prompt, type `vget [item-url]`. Example :
+Open `Windows Command Prompt` or `Powershell`
+
+To download photos from a vinted item, type `vget [item-url]`. Example :
 
 ```
 vget https://www.vinted.fr/items/6971438023-manette-sega-megadrive-2
+```
+
+To download from a text file that contains a list of vinted items links
+
+```
+vget --batch myLinks.txt
 ```
 
 ## Authentication
@@ -62,7 +70,7 @@ Download photos from a conversation (thread_id is found from the url like : http
 vget --thread <thread_id >
 ```
 
-# Documentation
+# Full Documentation
 
 NAME
 
