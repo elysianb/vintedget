@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
+import argparse
 import sys
 from datetime import datetime, timezone
-from colorama import Fore, Style, init
 
+parser = argparse.ArgumentParser()
+browser_group = parser.add_mutually_exclusive_group()
+browser_group.add_argument("--from-firefox", dest="browser", action="store_const", const="firefox")
+browser_group.add_argument("--from-chrome", dest="browser", action="store_const", const="chrome")
+args = parser.parse_args()
+
+if not args.browser:
+    parser.print_help()
+    sys.exit(0)
+
+from colorama import Fore, Style, init
 init(autoreset=True)
 
 try:
@@ -13,7 +24,7 @@ except ImportError:
 
 def get_vinted_cookies():
     return [
-        cookie for cookie in browser_cookie3.firefox(domain_name="vinted.fr")
+        cookie for cookie in getattr(browser_cookie3, args.browser)(domain_name="vinted.fr")
         if (
             cookie.domain.lstrip(".").lower() == "vinted.fr"
             or cookie.domain.lower().endswith(".vinted.fr")
