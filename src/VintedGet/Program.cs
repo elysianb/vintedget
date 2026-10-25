@@ -66,7 +66,8 @@ namespace VintedGet
                x => {
                    var directory = args.GetParameterValue("batch", "b", "vget.batch.txt");
                    var statisticsOnly = args.HasParameter("statistics-only", "so");
-                   new RunBatchCommand().Execute(directory, statisticsOnly);
+                   var noprofile = args.HasParameter("no-profile", "np");
+                   new RunBatchCommand().Execute(directory, statisticsOnly, noprofile);
                });
 
             cli.RegisterCommand("thread", "t",

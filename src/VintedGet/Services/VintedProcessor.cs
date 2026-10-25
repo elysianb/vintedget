@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -281,7 +282,7 @@ namespace VintedGet.Services
             }
         }
 
-        public static (Domain.Model.ItemDto, Domain.Model.PluginDto[]) GetItemFromId(HttpClient httpClient, string itemId, List<string> logs, string output = null)
+        public static (Domain.Model.ItemDto, Domain.Model.PluginDto[], HttpStatusCode) GetItemFromId(HttpClient httpClient, string itemId, List<string> logs, string output = null)
         {
             if (output == null)
             {
@@ -292,6 +293,7 @@ namespace VintedGet.Services
 
             Domain.Model.ItemDto item = null;
             Domain.Model.PluginDto[] plugins = null;
+            HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
             {
@@ -300,6 +302,7 @@ namespace VintedGet.Services
                 request.Headers.Add("Accept-Encoding", $"identity");
                 request.Headers.Add("Accept-Language", GlobalSettings.Instance.AcceptLanguage);
                 var httpResponse = httpClient.SendAsync(request).Result;
+                statusCode = httpResponse.StatusCode;
                 logs.Add($"statusCode={httpResponse.StatusCode}");
                 logs.Add($"reasonPhrase={httpResponse.ReasonPhrase}");
 
@@ -316,7 +319,7 @@ namespace VintedGet.Services
                         System.IO.File.WriteAllText(System.IO.Path.Combine(output, $"{itemId}-404.vget-summary.log"),
                             $"url={uri}{System.Environment.NewLine}statusCode={httpResponse.StatusCode}{System.Environment.NewLine}reasonPhrase={httpResponse.ReasonPhrase}");
 
-                        return (item, plugins);
+                        return (item, plugins, statusCode);
                     }
                 }
                 else
@@ -330,10 +333,10 @@ namespace VintedGet.Services
                 }
             }
 
-            return (item, plugins);
+            return (item, plugins, statusCode);
         }
 
-        public static void GetPhotos(HttpClient httpClient, string userCookies, string url, string output = null)
+        public static void GetPhotos(HttpClient httpClient, string userCookies, string url, string output = null, bool noprofile = false)
         {
             if (output == null)
             {
@@ -350,6 +353,7 @@ namespace VintedGet.Services
             string profilePhotoId;
             Domain.Model.ItemDto item = null;
             Domain.Model.PluginDto[] plugins = null;
+            var statusCode = HttpStatusCode.OK;
 
             var uri = $"{GlobalSettings.Instance.Authority}/items/{itemId}";
             //var uri = $"{GlobalSettings.Instance.Authority}/api/v2/items/{itemId}";
@@ -361,7 +365,13 @@ namespace VintedGet.Services
             {
                 Console.WriteLine($"  retry {retryCount} : {uri} ...");
 
-                (item, plugins) = GetItemFromId(httpClient, itemId, logs, output);
+                (item, plugins, statusCode) = GetItemFromId(httpClient, itemId, logs, output);
+
+                if (statusCode == HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"  skipp retry");
+                    return;
+                }
                 //using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
                 //{
                 //    //request.Headers.Add("Cookie", userCookies);
@@ -423,18 +433,25 @@ namespace VintedGet.Services
                     DownloadFile(client, photo.FullSizeUrl, System.IO.Path.Combine(output, photoFilename), GlobalSettings.Instance.Delay, GlobalSettings.Instance.MaxRetry);
                 }
 
-                Console.WriteLine("Profile Photo:");
-                if (!string.IsNullOrEmpty(profilePhoto))
+                if (noprofile)
                 {
-                    logs.Add("profile=" + profilePhoto);
-                    var fileName = GetFileNameFromUrl(profilePhoto);
-                    var profileFilename = $"{itemMetadata}-profile-{profilePhotoId}-{fileName}";
-
-                    DownloadFile(client, profilePhoto, System.IO.Path.Combine(output, profileFilename), GlobalSettings.Instance.Delay, GlobalSettings.Instance.MaxRetry);
+                    Console.WriteLine("Profile Photo: <skipped>");
                 }
                 else
                 {
-                    Console.WriteLine("<no profile picture>");
+                    Console.WriteLine("Profile Photo:");
+                    if (!string.IsNullOrEmpty(profilePhoto))
+                    {
+                        logs.Add("profile=" + profilePhoto);
+                        var fileName = GetFileNameFromUrl(profilePhoto);
+                        var profileFilename = $"{itemMetadata}-profile-{profilePhotoId}-{fileName}";
+
+                        DownloadFile(client, profilePhoto, System.IO.Path.Combine(output, profileFilename), GlobalSettings.Instance.Delay, GlobalSettings.Instance.MaxRetry);
+                    }
+                    else
+                    {
+                        Console.WriteLine("<no profile picture>");
+                    }
                 }
 
                 System.IO.File.WriteAllLines(System.IO.Path.Combine(output, $"{itemId}.vget-summary.log"), logs);
@@ -607,10 +624,11 @@ namespace VintedGet.Services
 
                 Domain.Model.ItemDto item = null;
                 Domain.Model.PluginDto[] plugins = null;
+                var statusCode = HttpStatusCode.OK;
 
                 using (var httpClient = new HttpClient())
                 {
-                    (item, plugins) = GetItemFromId(httpClient, response.MessageThread.Transaction.ItemId.ToString(), new List<string>(), null);
+                    (item, plugins, statusCode) = GetItemFromId(httpClient, response.MessageThread.Transaction.ItemId.ToString(), new List<string>(), null);
                 }
 
                 var itemMetadata = item != null ? GetItemMetadata(item, plugins) : "0000000000";

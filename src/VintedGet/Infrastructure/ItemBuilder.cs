@@ -31,7 +31,7 @@ namespace VintedGet.Infrastructure
 
             var sellerId = ExtractSellerIdFromHtml(httpBody);
             var sellerUsername = ExtractSellerUsernameFromHtml(httpBody);
-            var sellerPhoto = ExtractSellerPhotoFromHtml(httpBody);
+            var sellerPhoto = new Photo { FullSizeUrl = ExtractSellerImgFromHtml(httpBody) };
 
             var item = new PageProperties
             {

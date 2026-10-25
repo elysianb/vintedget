@@ -9,7 +9,7 @@ namespace VintedGet.Commands
 {
     internal class RunBatchCommand
     {
-        public void Execute(string filename, bool statisticsOnly)
+        public void Execute(string filename, bool statisticsOnly, bool noprofile)
         {
             Console.WriteLine($"Read configuration file: {filename}");
             var config = System.IO.File.ReadAllLines(filename);
@@ -62,7 +62,7 @@ namespace VintedGet.Commands
                     foreach (var url in folder.Value)
                     {
                         Console.WriteLine($"Item {++counter} of {totalItems} ({folder.Key} : {++folderCounter} of {folder.Value.Count()})");
-                        VintedProcessor.GetPhotos(client, null, url, folder.Key);
+                        VintedProcessor.GetPhotos(client, null, url, folder.Key, noprofile);
                     }
                 }
             }
